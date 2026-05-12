@@ -2,27 +2,107 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Plant Monitor</title>
+    <title>Plant Monitor System</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
-<div class="container">
-    <h1>Plant Monitor Dashboard</h1>
+<div class="terminal">
 
-    <div class="card">
-        <p>Temperature: <span id="temperature">0</span> °C</p>
-        <p>Humidity: <span id="humidity">0</span> %</p>
-        <p>Water: <span id="water">0</span></p>
-        <p>Soil: <span id="soil">0</span></p>
-        <p>Relay / LED: <span id="relay">OFF</span></p>
-        <p>Auto Mode: <span id="auto">OFF</span></p>
-    </div>
+    <header class="top-bar">
+        <div class="title">PLANT MONITOR SYSTEM v1.0</div>
+        <div class="time">AZURE NODE ONLINE</div>
+    </header>
 
-    <div class="buttons">
-        <button onclick="toggleRelay()">Toggle Relay / LED</button>
-        <button onclick="toggleAuto()">Toggle Auto Mode</button>
-    </div>
+    <nav class="nav-bar">
+        <span>[ DASHBOARD ]</span>
+        <span>[ SENSORS ]</span>
+        <span>[ CONTROLS ]</span>
+        <span>[ SYSTEM ]</span>
+    </nav>
+
+    <section class="grid">
+
+        <div class="panel status-panel">
+            <h2>SYSTEM STATUS</h2>
+
+            <div class="status-row">
+                <span>AUTO MODE</span>
+                <strong id="auto">OFF</strong>
+            </div>
+
+            <div class="status-row">
+                <span>RELAY / LED</span>
+                <strong id="relay">OFF</strong>
+            </div>
+
+            <div class="status-box">
+                <div id="mainStatus">NORMAL</div>
+                <small>ALL SYSTEMS OPERATIONAL</small>
+            </div>
+        </div>
+
+        <div class="panel controls-panel">
+            <h2>QUICK CONTROLS</h2>
+
+            <button onclick="toggleRelay()">▶ TOGGLE RELAY / LED</button>
+            <button onclick="toggleAuto()">▶ TOGGLE AUTO MODE</button>
+        </div>
+
+    </section>
+
+    <section class="panel sensor-panel">
+        <h2>SENSOR READINGS</h2>
+
+        <div class="sensor-grid">
+
+            <div class="sensor-card">
+                <h3>TEMPERATURE</h3>
+                <div class="value"><span id="temperature">0</span> °C</div>
+                <div class="bar">
+                    <div id="tempBar"></div>
+                </div>
+            </div>
+
+            <div class="sensor-card">
+                <h3>HUMIDITY</h3>
+                <div class="value"><span id="humidity">0</span> %</div>
+                <div class="bar">
+                    <div id="humidityBar"></div>
+                </div>
+            </div>
+
+            <div class="sensor-card">
+                <h3>WATER LEVEL</h3>
+                <div class="value"><span id="water">0</span></div>
+                <div class="bar">
+                    <div id="waterBar"></div>
+                </div>
+            </div>
+
+            <div class="sensor-card">
+                <h3>SOIL MOISTURE</h3>
+                <div class="value"><span id="soil">0</span></div>
+                <div class="bar">
+                    <div id="soilBar"></div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="panel log-panel">
+        <h2>SYSTEM LOG</h2>
+        <p>> Backend connected</p>
+        <p>> Waiting for sensor packets</p>
+        <p>> Relay module ready</p>
+        <p>> Auto control active</p>
+    </section>
+
+    <footer class="footer">
+        SYSTEM MESSAGE: ALL SYSTEMS NORMAL
+    </footer>
+
 </div>
 
 <script src="/static/script.js"></script>
