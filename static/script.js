@@ -11,7 +11,7 @@ async function fetchState() {
         const motionDetected = Number(motionValue) === 1;
 
         if (motionDetected) {
-            motionHoldUntil = Date.now() + 10000;
+            motionHoldUntil = Date.now() + 3000;
         }
 
         const motionVisible = motionDetected || Date.now() < motionHoldUntil;
