@@ -2,1171 +2,217 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PLANT MONITOR SYSTEM v1.0</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap');
-
-        :root {
-            --phosphor: #39ff14;
-            --phosphor-dim: #1a7a08;
-            --phosphor-glow: rgba(57, 255, 20, 0.4);
-            --amber: #ffb000;
-            --amber-dim: #7a5400;
-            --red-alert: #ff2222;
-            --bg-deep: #000300;
-            --bg-panel: #010d01;
-            --bg-inset: #000800;
-            --border: #1a4d1a;
-            --scanline: rgba(0,0,0,0.35);
-            --crt-green: #39ff14;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        html, body {
-            min-height: 100vh;
-            background: #000;
-            font-family: 'VT323', monospace;
-            color: var(--phosphor);
-            overflow-x: hidden;
-        }
-
-        /* CRT Monitor wrapper */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 2px,
-                var(--scanline) 2px,
-                var(--scanline) 4px
-            );
-            pointer-events: none;
-            z-index: 1000;
-        }
-
-        /* Vignette effect */
-        body::after {
-            content: '';
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(
-                ellipse at center,
-                transparent 50%,
-                rgba(0,0,0,0.7) 100%
-            );
-            pointer-events: none;
-            z-index: 999;
-        }
-
-        /* Screen flicker animation */
-        @keyframes flicker {
-            0%, 100% { opacity: 1; }
-            92% { opacity: 1; }
-            93% { opacity: 0.97; }
-            94% { opacity: 1; }
-            96% { opacity: 0.98; }
-        }
-
-        @keyframes phosphor-pulse {
-            0%, 100% { text-shadow: 0 0 4px var(--phosphor), 0 0 10px var(--phosphor-glow); }
-            50% { text-shadow: 0 0 6px var(--phosphor), 0 0 18px var(--phosphor-glow), 0 0 30px rgba(57,255,20,0.2); }
-        }
-
-        @keyframes blink {
-            0%, 49% { opacity: 1; }
-            50%, 100% { opacity: 0; }
-        }
-
-        @keyframes scanline-move {
-            0% { top: -100%; }
-            100% { top: 100%; }
-        }
-
-        @keyframes crt-on {
-            0% { transform: scaleY(0.01) scaleX(0.8); opacity: 0; filter: brightness(10); }
-            10% { transform: scaleY(0.01) scaleX(1); opacity: 1; }
-            30% { transform: scaleY(1) scaleX(1); }
-            100% { transform: scaleY(1) scaleX(1); }
-        }
-
-        .screen {
-            animation: flicker 8s infinite, crt-on 0.6s ease-out;
-            min-height: 100vh;
-            background:
-                radial-gradient(ellipse at 50% 30%, #011a01 0%, #000800 40%, #000300 100%);
-            padding: 0;
-        }
-
-        /* Moving scanline */
-        .scanline-sweep {
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            height: 120px;
-            background: linear-gradient(
-                to bottom,
-                transparent,
-                rgba(57, 255, 20, 0.03) 50%,
-                transparent
-            );
-            animation: scanline-move 6s linear infinite;
-            pointer-events: none;
-            z-index: 998;
-        }
-
-        /* ============ LAYOUT ============ */
-        .terminal {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 8px 12px 20px;
-        }
-
-        /* ============ TOP HEADER ============ */
-        .system-header {
-            border: 2px solid var(--phosphor);
-            border-bottom: none;
-            display: grid;
-            grid-template-columns: auto 1fr auto;
-            align-items: stretch;
-            box-shadow: 0 0 20px var(--phosphor-glow), inset 0 0 30px rgba(57,255,20,0.05);
-        }
-
-        .header-logo {
-            padding: 10px 20px;
-            border-right: 2px solid var(--phosphor);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            background: #011201;
-        }
-
-        .header-logo .logo-text {
-            font-size: 11px;
-            color: var(--phosphor-dim);
-            letter-spacing: 3px;
-            font-family: 'Share Tech Mono', monospace;
-            line-height: 1.4;
-        }
-
-        .header-logo .logo-main {
-            font-size: 38px;
-            color: var(--phosphor);
-            text-shadow: 0 0 8px var(--phosphor), 0 0 20px var(--phosphor-glow);
-            letter-spacing: 2px;
-            line-height: 1;
-        }
-
-        .header-center {
-            padding: 10px 24px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .system-title {
-            font-size: 46px;
-            color: var(--phosphor);
-            text-shadow: 0 0 8px var(--phosphor), 0 0 25px var(--phosphor-glow);
-            letter-spacing: 4px;
-            animation: phosphor-pulse 3s ease-in-out infinite;
-        }
-
-        .system-subtitle {
-            font-size: 16px;
-            color: var(--phosphor-dim);
-            letter-spacing: 6px;
-            font-family: 'Share Tech Mono', monospace;
-            margin-top: 2px;
-        }
-
-        .header-status {
-            padding: 10px 20px;
-            border-left: 2px solid var(--phosphor);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            min-width: 220px;
-            background: #011201;
-        }
-
-        .header-status-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 16px;
-            font-family: 'Share Tech Mono', monospace;
-            padding: 3px 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .header-status-row:last-child { border-bottom: none; }
-
-        .status-indicator {
-            width: 10px; height: 10px;
-            border-radius: 50%;
-            display: inline-block;
-            background: var(--phosphor);
-            box-shadow: 0 0 6px var(--phosphor);
-            animation: blink 1s step-end infinite;
-            margin-right: 6px;
-        }
-
-        .status-indicator.amber {
-            background: var(--amber);
-            box-shadow: 0 0 6px var(--amber);
-        }
-
-        .status-indicator.solid {
-            animation: phosphor-pulse 2s ease-in-out infinite;
-        }
-
-        /* ============ NAV BAR ============ */
-        .nav-bar {
-            border: 2px solid var(--phosphor);
-            border-top: 1px solid var(--border);
-            border-bottom: none;
-            display: flex;
-            background: #010a01;
-            box-shadow: 0 0 10px var(--phosphor-glow);
-        }
-
-        .nav-item {
-            padding: 8px 24px;
-            border-right: 2px solid var(--phosphor);
-            color: var(--phosphor-dim);
-            font-size: 22px;
-            letter-spacing: 2px;
-            cursor: pointer;
-            transition: all 0.1s;
-            position: relative;
-        }
-
-        .nav-item:hover, .nav-item.active {
-            color: var(--phosphor);
-            background: rgba(57,255,20,0.1);
-            text-shadow: 0 0 8px var(--phosphor);
-        }
-
-        .nav-item.active::before {
-            content: '▶ ';
-        }
-
-        .nav-clock {
-            margin-left: auto;
-            padding: 8px 20px;
-            font-size: 26px;
-            color: var(--amber);
-            text-shadow: 0 0 8px var(--amber);
-            border-left: 2px solid var(--phosphor);
-            font-family: 'Share Tech Mono', monospace;
-            letter-spacing: 2px;
-        }
-
-        /* ============ MAIN CONTENT ============ */
-        .content-area {
-            border: 2px solid var(--phosphor);
-            border-top: 1px solid var(--border);
-            box-shadow: 0 0 20px var(--phosphor-glow), inset 0 0 40px rgba(0,0,0,0.5);
-            background: var(--bg-panel);
-        }
-
-        /* ============ TOP ROW: STATUS + CONTROLS ============ */
-        .top-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            border-bottom: 2px solid var(--phosphor);
-        }
-
-        .panel {
-            padding: 0;
-        }
-
-        .panel + .panel {
-            border-left: 2px solid var(--phosphor);
-        }
-
-        .panel-header {
-            background: var(--phosphor);
-            color: #000800;
-            font-size: 20px;
-            padding: 6px 14px;
-            letter-spacing: 3px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .panel-header-num {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 12px;
-            opacity: 0.7;
-        }
-
-        .panel-body {
-            padding: 14px;
-        }
-
-        /* ============ STATUS PANEL ============ */
-        .status-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px dashed var(--border);
-            font-size: 22px;
-        }
-
-        .status-item:last-child { border-bottom: none; }
-
-        .status-item .label {
-            color: var(--phosphor-dim);
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 14px;
-            letter-spacing: 2px;
-        }
-
-        .status-value {
-            color: var(--phosphor);
-            text-shadow: 0 0 8px var(--phosphor);
-            font-size: 28px;
-        }
-
-        .status-value.off {
-            color: var(--phosphor-dim);
-            text-shadow: none;
-        }
-
-        .status-value.alert {
-            color: var(--red-alert);
-            text-shadow: 0 0 8px var(--red-alert);
-            animation: blink 0.5s step-end infinite;
-        }
-
-        .big-status-box {
-            margin-top: 12px;
-            border: 2px solid var(--phosphor);
-            background: var(--bg-inset);
-            text-align: center;
-            padding: 16px;
-            box-shadow: inset 0 0 20px rgba(57,255,20,0.1);
-        }
-
-        .big-status-text {
-            font-size: 42px;
-            color: var(--phosphor);
-            text-shadow: 0 0 10px var(--phosphor), 0 0 25px var(--phosphor-glow);
-            letter-spacing: 4px;
-        }
-
-        .big-status-sub {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 11px;
-            color: var(--phosphor-dim);
-            letter-spacing: 3px;
-            margin-top: 6px;
-        }
-
-        /* ============ CONTROLS PANEL ============ */
-        .control-btn {
-            display: block;
-            width: 100%;
-            font-family: 'VT323', monospace;
-            font-size: 24px;
-            background: var(--bg-inset);
-            color: var(--phosphor);
-            border: 2px solid var(--phosphor);
-            padding: 14px 18px;
-            margin-bottom: 12px;
-            cursor: pointer;
-            text-align: left;
-            letter-spacing: 2px;
-            box-shadow: 0 0 8px var(--phosphor-glow), inset 0 0 10px rgba(0,0,0,0.5);
-            transition: all 0.08s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .control-btn::before {
-            content: '█ ';
-            color: var(--phosphor-dim);
-            font-size: 14px;
-        }
-
-        .control-btn::after {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%;
-            width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(57,255,20,0.1), transparent);
-            transition: left 0.3s;
-        }
-
-        .control-btn:hover::after { left: 100%; }
-
-        .control-btn:hover {
-            background: rgba(57,255,20,0.15);
-            box-shadow: 0 0 16px var(--phosphor-glow), inset 0 0 20px rgba(57,255,20,0.1);
-            text-shadow: 0 0 8px var(--phosphor);
-        }
-
-        .control-btn:active {
-            transform: scale(0.98);
-            background: rgba(57,255,20,0.25);
-        }
-
-        .control-btn.amber-btn {
-            color: var(--amber);
-            border-color: var(--amber);
-            box-shadow: 0 0 8px rgba(255,176,0,0.3), inset 0 0 10px rgba(0,0,0,0.5);
-        }
-        .control-btn.amber-btn::before { color: var(--amber-dim); }
-        .control-btn.amber-btn:hover {
-            background: rgba(255,176,0,0.12);
-            box-shadow: 0 0 16px rgba(255,176,0,0.4);
-            text-shadow: 0 0 8px var(--amber);
-        }
-
-        .control-divider {
-            border: none;
-            border-top: 1px dashed var(--border);
-            margin: 12px 0;
-        }
-
-        .control-label {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 11px;
-            color: var(--phosphor-dim);
-            letter-spacing: 3px;
-            margin-bottom: 8px;
-        }
-
-        /* ============ SYSTEM INFO PANEL ============ */
-        .sys-info-row {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 13px;
-            color: var(--phosphor-dim);
-            padding: 5px 0;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .sys-info-row span { color: var(--phosphor); }
-
-        .threshold-display {
-            margin-top: 12px;
-            background: var(--bg-inset);
-            border: 1px solid var(--border);
-            padding: 10px;
-        }
-
-        .threshold-row {
-            display: flex;
-            justify-content: space-between;
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 12px;
-            color: var(--phosphor-dim);
-            padding: 4px 0;
-        }
-
-        .threshold-row span { color: var(--amber); }
-
-        /* ============ SENSORS ============ */
-        .sensors-row {
-            border-bottom: 2px solid var(--phosphor);
-        }
-
-        .sensors-header {
-            background: var(--phosphor);
-            color: #000800;
-            font-size: 20px;
-            padding: 6px 14px;
-            letter-spacing: 3px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .sensor-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-        }
-
-        .sensor-card {
-            padding: 16px;
-            border-right: 2px solid var(--phosphor);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .sensor-card:last-child { border-right: none; }
-
-        .sensor-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: repeating-linear-gradient(
-                135deg,
-                transparent,
-                transparent 10px,
-                rgba(57,255,20,0.015) 10px,
-                rgba(57,255,20,0.015) 11px
-            );
-            pointer-events: none;
-        }
-
-        .sensor-id {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 10px;
-            color: var(--phosphor-dim);
-            letter-spacing: 2px;
-            margin-bottom: 4px;
-        }
-
-        .sensor-name {
-            font-size: 20px;
-            color: var(--phosphor-dim);
-            letter-spacing: 2px;
-            margin-bottom: 10px;
-        }
-
-        .sensor-value {
-            font-size: 58px;
-            color: var(--phosphor);
-            text-shadow: 0 0 12px var(--phosphor), 0 0 30px var(--phosphor-glow);
-            line-height: 1;
-            letter-spacing: -1px;
-        }
-
-        .sensor-unit {
-            font-size: 20px;
-            color: var(--phosphor-dim);
-            margin-left: 4px;
-        }
-
-        .sensor-bar-label {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 10px;
-            color: var(--phosphor-dim);
-            margin-top: 12px;
-            margin-bottom: 4px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .bar-track {
-            height: 14px;
-            background: var(--bg-inset);
-            border: 1px solid var(--border);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .bar-fill {
-            height: 100%;
-            width: 0%;
-            background: repeating-linear-gradient(
-                90deg,
-                var(--phosphor),
-                var(--phosphor) 6px,
-                #005500 6px,
-                #005500 9px
-            );
-            transition: width 0.5s ease;
-            box-shadow: 0 0 6px var(--phosphor-glow);
-        }
-
-        .bar-fill.warning {
-            background: repeating-linear-gradient(
-                90deg,
-                var(--amber),
-                var(--amber) 6px,
-                #553300 6px,
-                #553300 9px
-            );
-        }
-
-        .bar-fill.danger {
-            background: repeating-linear-gradient(
-                90deg,
-                var(--red-alert),
-                var(--red-alert) 6px,
-                #550000 6px,
-                #550000 9px
-            );
-        }
-
-        /* tick marks */
-        .bar-ticks {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            display: flex;
-            pointer-events: none;
-        }
-
-        .bar-tick {
-            position: absolute;
-            top: 0;
-            width: 1px;
-            height: 50%;
-            background: rgba(0,0,0,0.5);
-        }
-
-        /* ============ BOTTOM ROW ============ */
-        .bottom-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-        }
-
-        /* ============ LOG PANEL ============ */
-        .log-panel {
-            border-right: 2px solid var(--phosphor);
-        }
-
-        .log-entries {
-            padding: 10px 14px;
-            max-height: 200px;
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: var(--phosphor-dim) var(--bg-inset);
-        }
-
-        .log-entry {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 13px;
-            color: var(--phosphor-dim);
-            padding: 3px 0;
-            border-bottom: 1px solid rgba(57,255,20,0.08);
-            display: grid;
-            grid-template-columns: 90px 40px 1fr;
-            gap: 8px;
-        }
-
-        .log-time { color: var(--amber); }
-        .log-lvl { color: var(--phosphor); }
-        .log-lvl.warn { color: var(--amber); }
-        .log-lvl.crit { color: var(--red-alert); }
-        .log-msg { color: var(--phosphor-dim); }
-
-        /* ============ MINI ASCII PLANT ============ */
-        .ascii-panel {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
-        }
-
-        .ascii-art {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 12px;
-            color: var(--phosphor-dim);
-            white-space: pre;
-            line-height: 1.3;
-            text-shadow: 0 0 4px var(--phosphor-glow);
-            text-align: center;
-        }
-
-        .ascii-label {
-            font-size: 14px;
-            color: var(--phosphor-dim);
-            letter-spacing: 4px;
-            font-family: 'Share Tech Mono', monospace;
-            margin-top: 8px;
-        }
-
-        /* ============ FOOTER ============ */
-        .system-footer {
-            border: 2px solid var(--phosphor);
-            border-top: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 14px;
-            background: #010a01;
-            box-shadow: 0 0 10px var(--phosphor-glow);
-        }
-
-        .footer-msg {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 13px;
-            color: var(--phosphor-dim);
-            letter-spacing: 2px;
-        }
-
-        .footer-msg .cursor {
-            animation: blink 1s step-end infinite;
-        }
-
-        .footer-right {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 12px;
-            color: var(--phosphor-dim);
-        }
-
-        /* Progress meter for overall health */
-        .health-meter {
-            margin-top: 10px;
-        }
-
-        .health-label {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 11px;
-            color: var(--phosphor-dim);
-            letter-spacing: 3px;
-            margin-bottom: 6px;
-        }
-
-        .health-bar-wrap {
-            display: flex;
-            gap: 3px;
-        }
-
-        .health-block {
-            flex: 1;
-            height: 18px;
-            background: var(--bg-inset);
-            border: 1px solid var(--border);
-            transition: background 0.5s, box-shadow 0.5s;
-        }
-
-        .health-block.filled {
-            background: var(--phosphor);
-            box-shadow: 0 0 6px var(--phosphor-glow);
-        }
-
-        /* responsive */
-        @media (max-width: 1000px) {
-            .top-row { grid-template-columns: 1fr 1fr; }
-            .sensor-grid { grid-template-columns: 1fr 1fr; }
-            .bottom-row { grid-template-columns: 1fr; }
-        }
-
-        @media (max-width: 600px) {
-            .top-row { grid-template-columns: 1fr; }
-            .sensor-grid { grid-template-columns: 1fr; }
-            .system-title { font-size: 28px; }
-            .header-logo .logo-main { font-size: 24px; }
-            .system-header { grid-template-columns: 1fr; }
-        }
-    </style>
+    <title>Plant Monitor System</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-<div class="scanline-sweep"></div>
-<div class="screen">
-<div class="terminal">
 
-    <!-- HEADER -->
-    <div class="system-header">
-        <div class="header-logo">
-            <div class="logo-text">BOTANICAL SYSTEMS<br>NODE-AZ-01</div>
-            <div class="logo-main">[ PMS ]</div>
+<div class="crt">
+
+    <header class="top-panel">
+        <div>
+            <div class="system-title">PLANT MONITOR SYSTEM v1.0</div>
+            <div class="sub-title">NODE AZ-01 // CLOUD LINK ACTIVE</div>
         </div>
-        <div class="header-center">
-            <div class="system-title">PLANT MONITOR SYSTEM</div>
-            <div class="system-subtitle">DISTRIBUTED BIOMETRIC CONTROL NETWORK &nbsp;///&nbsp; VERSION 1.0</div>
-        </div>
-        <div class="header-status">
-            <div class="header-status-row">
-                <span>CORE&nbsp;</span>
-                <span><span class="status-indicator solid"></span>ONLINE</span>
-            </div>
-            <div class="header-status-row">
-                <span>AZURE NODE&nbsp;</span>
-                <span><span class="status-indicator solid"></span>ACTIVE</span>
-            </div>
-            <div class="header-status-row">
-                <span>UPLINK&nbsp;</span>
-                <span><span class="status-indicator amber"></span>WAITING</span>
-            </div>
-            <div class="header-status-row">
-                <span>BUILD&nbsp;</span>
-                <span id="buildDate">1993.11.04</span>
-            </div>
-        </div>
-    </div>
+        <div class="clock">SYS/ONLINE</div>
+    </header>
 
-    <!-- NAV -->
-    <div class="nav-bar">
-        <div class="nav-item active">DASHBOARD</div>
-        <div class="nav-item">SENSORS</div>
-        <div class="nav-item">CONTROLS</div>
-        <div class="nav-item">DIAGNOSTICS</div>
-        <div class="nav-item">SYSTEM</div>
-        <div class="nav-clock" id="clock">00:00:00</div>
-    </div>
+    <section class="dashboard-grid">
 
-    <!-- MAIN CONTENT -->
-    <div class="content-area">
+        <div class="panel status-panel">
+            <div class="panel-label">SYSTEM STATUS</div>
 
-        <!-- TOP ROW: Status + Controls + SysInfo -->
-        <div class="top-row">
+            <div class="status-main" id="mainStatus">NOMINAL</div>
+            <div class="status-sub">ALL SYSTEMS OPERATIONAL</div>
 
-            <!-- STATUS PANEL -->
-            <div class="panel">
-                <div class="panel-header">
-                    SYSTEM STATUS
-                    <span class="panel-header-num">SYS/001</span>
-                </div>
-                <div class="panel-body">
-                    <div class="status-item">
-                        <span class="label">AUTO CTRL MODE</span>
-                        <span class="status-value off" id="auto">OFFLINE</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="label">RELAY / LED</span>
-                        <span class="status-value off" id="relay">OPEN</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="label">LAST UPLINK</span>
-                        <span class="status-value" id="lastUplink" style="font-size:18px;">---</span>
-                    </div>
-
-                    <div class="big-status-box">
-                        <div class="big-status-text" id="mainStatus">STANDBY</div>
-                        <div class="big-status-sub" id="mainStatusSub">AWAITING SENSOR DATA</div>
-                    </div>
-
-                    <div class="health-meter">
-                        <div class="health-label">SYSTEM HEALTH &nbsp;[&nbsp;<span id="healthPct">0</span>%&nbsp;]</div>
-                        <div class="health-bar-wrap" id="healthBar">
-                            <!-- blocks injected by JS -->
-                        </div>
-                    </div>
-                </div>
+            <div class="status-row">
+                <span>AUTO MODE</span>
+                <strong id="auto">ON</strong>
             </div>
 
-            <!-- CONTROLS PANEL -->
-            <div class="panel">
-                <div class="panel-header">
-                    QUICK CONTROLS
-                    <span class="panel-header-num">CTL/002</span>
-                </div>
-                <div class="panel-body">
-                    <div class="control-label">RELAY OPERATIONS</div>
-                    <button class="control-btn" onclick="toggleRelay()">TOGGLE RELAY / LED</button>
-
-                    <hr class="control-divider">
-                    <div class="control-label">AUTOMATION</div>
-                    <button class="control-btn amber-btn" onclick="toggleAuto()">TOGGLE AUTO MODE</button>
-
-                    <hr class="control-divider">
-                    <div class="control-label">DIAGNOSTICS</div>
-                    <button class="control-btn" onclick="manualRefresh()">FORCE SENSOR POLL</button>
-                </div>
+            <div class="status-row">
+                <span>UPLINK</span>
+                <strong>ACTIVE</strong>
             </div>
 
-            <!-- SYS INFO PANEL -->
-            <div class="panel">
-                <div class="panel-header">
-                    NODE INFORMATION
-                    <span class="panel-header-num">INF/003</span>
-                </div>
-                <div class="panel-body">
-                    <div class="sys-info-row">NODE ID <span>AZ-NODE-01</span></div>
-                    <div class="sys-info-row">PROTOCOL <span>FASTAPI/HTTP</span></div>
-                    <div class="sys-info-row">POLL RATE <span>2000ms</span></div>
-                    <div class="sys-info-row">FIRMWARE <span>v1.0.0</span></div>
-                    <div class="sys-info-row">SENSOR BUS <span>I2C / UART</span></div>
-                    <div class="sys-info-row">DATA FORMAT <span>JSON/REST</span></div>
-
-                    <div class="threshold-display">
-                        <div class="control-label" style="margin-bottom:6px;">THRESHOLDS</div>
-                        <div class="threshold-row">SOIL MOISTURE <span id="threshSoil">&lt; 400</span></div>
-                        <div class="threshold-row">WATER LEVEL <span id="threshWater">&lt; 300</span></div>
-                        <div class="threshold-row">AUTO RELAY TRIGGER <span>BOTH</span></div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- SENSORS ROW -->
-        <div class="sensors-row">
-            <div class="sensors-header">
-                SENSOR ARRAY — REAL-TIME BIOMETRIC READINGS
-                <span class="panel-header-num">SNS/004</span>
-            </div>
-            <div class="sensor-grid">
-
-                <div class="sensor-card">
-                    <div class="sensor-id">CHANNEL 01 // DHT22-A</div>
-                    <div class="sensor-name">TEMPERATURE</div>
-                    <div class="sensor-value"><span id="temperature">---</span><span class="sensor-unit">°C</span></div>
-                    <div class="sensor-bar-label">
-                        <span>0°C</span><span>LEVEL</span><span>50°C</span>
-                    </div>
-                    <div class="bar-track">
-                        <div class="bar-fill" id="tempBar"></div>
-                    </div>
-                </div>
-
-                <div class="sensor-card">
-                    <div class="sensor-id">CHANNEL 02 // DHT22-B</div>
-                    <div class="sensor-name">HUMIDITY</div>
-                    <div class="sensor-value"><span id="humidity">---</span><span class="sensor-unit">%RH</span></div>
-                    <div class="sensor-bar-label">
-                        <span>0%</span><span>LEVEL</span><span>100%</span>
-                    </div>
-                    <div class="bar-track">
-                        <div class="bar-fill" id="humidityBar"></div>
-                    </div>
-                </div>
-
-                <div class="sensor-card">
-                    <div class="sensor-id">CHANNEL 03 // ANALOG-0</div>
-                    <div class="sensor-name">WATER LEVEL</div>
-                    <div class="sensor-value"><span id="water">---</span><span class="sensor-unit" style="font-size:14px;">RAW</span></div>
-                    <div class="sensor-bar-label">
-                        <span>0</span><span>LEVEL</span><span>1023</span>
-                    </div>
-                    <div class="bar-track">
-                        <div class="bar-fill" id="waterBar"></div>
-                    </div>
-                </div>
-
-                <div class="sensor-card">
-                    <div class="sensor-id">CHANNEL 04 // ANALOG-1</div>
-                    <div class="sensor-name">SOIL MOISTURE</div>
-                    <div class="sensor-value"><span id="soil">---</span><span class="sensor-unit" style="font-size:14px;">RAW</span></div>
-                    <div class="sensor-bar-label">
-                        <span>0</span><span>LEVEL</span><span>1023</span>
-                    </div>
-                    <div class="bar-track">
-                        <div class="bar-fill" id="soilBar"></div>
-                    </div>
-                </div>
-
+            <div class="health-bar">
+                <span></span><span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span>
             </div>
         </div>
 
-        <!-- BOTTOM ROW: LOG + ASCII art -->
-        <div class="bottom-row">
-            <div class="panel log-panel">
-                <div class="panel-header">
-                    SYSTEM LOG — ACTIVITY MONITOR
-                    <span class="panel-header-num">LOG/005</span>
-                </div>
-                <div class="log-entries" id="logEntries">
-                    <!-- JS will populate -->
-                </div>
-            </div>
-            <div class="panel ascii-panel">
-                <pre class="ascii-art" id="asciiPlant">
-       .    .    .
-    .  |  . | .  |  .
-       |    |    |
-  _____|____|____|_____
- /  .-' .--.|.--. '-.  \
-/  /   /    |    \   \  \
-\ |   |  UNIT-01  |   | /
- \_\   \    |    /   /_/
-    '--.__'--|'--.__'--
-           [=]
-        </pre>
-                <div class="ascii-label">UNIT-01 // SPECIMEN A</div>
-                <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--phosphor-dim);margin-top:6px;letter-spacing:2px;">MONITOR ACTIVE</div>
+        <div class="panel automation-panel">
+            <div class="panel-label">AUTOMATION</div>
+
+            <button onclick="toggleAuto()">▣ TOGGLE AUTO MODE</button>
+            <button onclick="forcePoll()">▣ FORCE SENSOR POLL</button>
+
+            <div class="mini-log">
+                <p>MODE: AUTO CONTROL</p>
+                <p>FORMAT: JSON / REST</p>
             </div>
         </div>
 
-    </div>
+        <div class="panel threshold-panel">
+            <div class="panel-label">THRESHOLDS</div>
 
-    <!-- FOOTER -->
-    <div class="system-footer">
-        <div class="footer-msg">
-            &gt;&nbsp;<span id="footerMsg">SYSTEM READY. ALL SUBSYSTEMS NOMINAL.</span><span class="cursor">_</span>
+            <div class="threshold-row">
+                <span>AIR HUMIDITY</span>
+                <strong>&lt; 40</strong>
+            </div>
+
+            <div class="threshold-row">
+                <span>WATER LEVEL</span>
+                <strong>&lt; 300</strong>
+            </div>
+
+            <div class="threshold-row">
+                <span>SOIL MOISTURE</span>
+                <strong>&lt; 300</strong>
+            </div>
+
+            <div class="threshold-row">
+                <span>AUTO TRIGGER</span>
+                <strong>ENABLED</strong>
+            </div>
         </div>
-        <div class="footer-right">
-            PMS v1.0 &nbsp;|&nbsp; NODE AZ-01 &nbsp;|&nbsp; <span id="footerDate">0000-00-00</span>
+
+    </section>
+
+    <section class="sensor-section">
+        <div class="section-title">
+            SENSOR ARRAY - REAL-TIME BIOMETRIC READINGS
+            <span>SYS/001</span>
         </div>
-    </div>
 
-</div><!-- /.terminal -->
-</div><!-- /.screen -->
+        <div class="sensor-grid">
 
-<script>
-    const API = "";
+            <div class="sensor-card">
+                <div class="channel">CHANNEL 01 // DHT22-A</div>
+                <h3>AIR HUMIDITY</h3>
+                <div class="sensor-value"><span id="air_humidity">0</span> %</div>
+                <div class="scale">
+                    <span>0%</span>
+                    <span>LEVEL</span>
+                    <span>100%</span>
+                </div>
+                <div class="bar"><div id="humidityBar"></div></div>
+            </div>
 
-    // ---- CLOCK ----
-    function updateClock() {
-        const now = new Date();
-        const h = String(now.getHours()).padStart(2,'0');
-        const m = String(now.getMinutes()).padStart(2,'0');
-        const s = String(now.getSeconds()).padStart(2,'0');
-        document.getElementById('clock').textContent = h + ':' + m + ':' + s;
-        const d = now.toISOString().split('T')[0];
-        document.getElementById('footerDate').textContent = d;
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
+            <div class="sensor-card">
+                <div class="channel">CHANNEL 02 // ANALOG-0</div>
+                <h3>WATER LEVEL</h3>
+                <div class="sensor-value"><span id="water">0</span> /1023</div>
+                <div class="scale">
+                    <span>0</span>
+                    <span>LEVEL</span>
+                    <span>1023</span>
+                </div>
+                <div class="bar"><div id="waterBar"></div></div>
+            </div>
 
-    // ---- HEALTH BAR ----
-    const healthBarEl = document.getElementById('healthBar');
-    const HEALTH_BLOCKS = 20;
-    for (let i = 0; i < HEALTH_BLOCKS; i++) {
-        const b = document.createElement('div');
-        b.className = 'health-block';
-        b.id = 'hb' + i;
-        healthBarEl.appendChild(b);
-    }
+            <div class="sensor-card">
+                <div class="channel">CHANNEL 03 // ANALOG-1</div>
+                <h3>SOIL MOISTURE</h3>
+                <div class="sensor-value"><span id="soil">0</span> /1023</div>
+                <div class="scale">
+                    <span>0</span>
+                    <span>LEVEL</span>
+                    <span>1023</span>
+                </div>
+                <div class="bar"><div id="soilBar"></div></div>
+            </div>
 
-    function setHealth(pct) {
-        document.getElementById('healthPct').textContent = Math.round(pct);
-        const filled = Math.round((pct / 100) * HEALTH_BLOCKS);
-        for (let i = 0; i < HEALTH_BLOCKS; i++) {
-            document.getElementById('hb' + i).classList.toggle('filled', i < filled);
-        }
-    }
+        </div>
+    </section>
 
-    // ---- LOG ----
-    const logs = [
-        { t: getTimeStr(), lvl: 'INFO', msg: 'BACKEND CONNECTED' },
-        { t: getTimeStr(), lvl: 'INFO', msg: 'WAITING FOR SENSOR PACKETS' },
-        { t: getTimeStr(), lvl: 'INFO', msg: 'RELAY MODULE READY' },
-        { t: getTimeStr(), lvl: 'INFO', msg: 'AUTO CONTROL STANDBY' },
-    ];
+    <section class="bottom-grid">
 
-    function getTimeStr() {
-        const n = new Date();
-        return String(n.getHours()).padStart(2,'0') + ':' +
-               String(n.getMinutes()).padStart(2,'0') + ':' +
-               String(n.getSeconds()).padStart(2,'0');
-    }
+        <div class="left-column">
 
-    function addLog(lvl, msg) {
-        logs.unshift({ t: getTimeStr(), lvl, msg });
-        if (logs.length > 40) logs.pop();
-        renderLog();
-    }
+            <section class="actuator-section">
+                <div class="section-title">ACTUATOR STATUS - OUTPUT CONTROL</div>
 
-    function renderLog() {
-        const el = document.getElementById('logEntries');
-        el.innerHTML = logs.map(l => {
-            const cls = l.lvl === 'WARN' ? 'warn' : l.lvl === 'CRIT' ? 'crit' : '';
-            return `<div class="log-entry">
-                <span class="log-time">${l.t}</span>
-                <span class="log-lvl ${cls}">${l.lvl}</span>
-                <span class="log-msg">${l.msg}</span>
-            </div>`;
-        }).join('');
-    }
-    renderLog();
+                <div class="actuator-grid">
 
-    // ---- BARS ----
-    function updateBar(id, value, max) {
-        const pct = Math.min((value / max) * 100, 100);
-        const el = document.getElementById(id);
-        el.style.width = pct + '%';
-        el.classList.remove('warning', 'danger');
-        if (pct < 20) el.classList.add('danger');
-        else if (pct < 40) el.classList.add('warning');
-    }
+                    <div class="actuator-card">
+                        <div class="channel">OUTPUT 01 // RELAY MODULE</div>
+                        <h3>RELAY</h3>
+                        <div class="actuator-state" id="relay">OFF</div>
+                        <button onclick="toggleRelay()">▣ TOGGLE</button>
+                    </div>
 
-    // ---- FETCH STATE ----
-    let lastSuccessTime = null;
+                    <div class="actuator-card">
+                        <div class="channel">OUTPUT 02 // LED DRIVER</div>
+                        <h3>LED</h3>
+                        <div class="actuator-state" id="led">OFF</div>
+                        <button onclick="toggleLed()">▣ TOGGLE</button>
+                    </div>
 
-    async function fetchState() {
-        try {
-            const response = await fetch(`${API}/api/state`);
-            const data = await response.json();
+                    <div class="actuator-card">
+                        <div class="channel">OUTPUT 03 // BUZZER UNIT</div>
+                        <h3>BUZZER</h3>
+                        <div class="actuator-state" id="buzzer">OFF</div>
+                        <button onclick="toggleBuzzer()">▣ TOGGLE</button>
+                    </div>
 
-            document.getElementById('temperature').textContent = data.temperature;
-            document.getElementById('humidity').textContent = data.humidity;
-            document.getElementById('water').textContent = data.water;
-            document.getElementById('soil').textContent = data.soil;
+                </div>
+            </section>
 
-            const relayOn = data.relay;
-            const autoOn = data.auto_mode;
+            <section class="log-section">
+                <div class="section-title">
+                    SYSTEM LOG - ACTIVITY MONITOR
+                    <span>LOG/005</span>
+                </div>
 
-            const relayEl = document.getElementById('relay');
-            relayEl.textContent = relayOn ? 'CLOSED' : 'OPEN';
-            relayEl.className = 'status-value' + (relayOn ? '' : ' off');
+                <div class="log-lines">
+                    <p><span>INFO</span> BACKEND CONNECTED</p>
+                    <p><span>INFO</span> WAITING FOR SENSOR PACKETS</p>
+                    <p><span>INFO</span> RELAY MODULE READY</p>
+                    <p><span>INFO</span> LED DRIVER READY</p>
+                    <p><span>INFO</span> BUZZER UNIT READY</p>
+                    <p><span>INFO</span> AUTO CONTROL STANDBY</p>
+                </div>
+            </section>
 
-            const autoEl = document.getElementById('auto');
-            autoEl.textContent = autoOn ? 'ACTIVE' : 'OFFLINE';
-            autoEl.className = 'status-value' + (autoOn ? '' : ' off');
+        </div>
 
-            const statusEl = document.getElementById('mainStatus');
-            const subEl = document.getElementById('mainStatusSub');
-            if (relayOn) {
-                statusEl.textContent = 'IRRIGATING';
-                statusEl.style.color = 'var(--amber)';
-                statusEl.style.textShadow = '0 0 10px var(--amber), 0 0 25px rgba(255,176,0,0.4)';
-                subEl.textContent = 'RELAY CLOSED — PUMP ACTIVE';
-            } else {
-                statusEl.textContent = 'NOMINAL';
-                statusEl.style.color = '';
-                statusEl.style.textShadow = '';
-                subEl.textContent = 'ALL SYSTEMS OPERATIONAL';
-            }
+        <section class="horror-panel">
+            <div class="camera-header">
+                <span>CAM-01</span>
+                <span class="rec">● REC</span>
+            </div>
 
-            updateBar('tempBar', data.temperature, 50);
-            updateBar('humidityBar', data.humidity, 100);
-            updateBar('waterBar', data.water, 1023);
-            updateBar('soilBar', data.soil, 1023);
+            <div class="horror-screen">
+<pre>
+       ▄████████▄
+     ▄██▀  ▄▄  ▀██▄
+    ██▀   ◉  ◉   ▀██
+   ██      ▄▄▄      ██
+   ██   ▄█▀▀▀▀▀█▄   ██
+    ██   ▀▄▄▄▄▄▀   ██
+     ▀██▄       ▄██▀
+        ▀███████▀
+       ▄██  █  ██▄
+      ██    █    ██
+     ██   UNIT-01  ██
+</pre>
+            </div>
 
-            // health: combo of humidity + soil + water
-            const health = (
-                Math.min(data.humidity, 100) * 0.4 +
-                Math.min(data.water / 1023, 1) * 100 * 0.3 +
-                Math.min(data.soil / 1023, 1) * 100 * 0.3
-            );
-            setHealth(health);
+            <div class="camera-text">
+                NIGHT MONITOR ACTIVE // MOTION UNKNOWN
+            </div>
+        </section>
 
-            lastSuccessTime = new Date();
-            document.getElementById('lastUplink').textContent = getTimeStr();
-            document.getElementById('footerMsg').textContent = 'SENSOR DATA UPDATED. ALL READINGS NOMINAL.';
+    </section>
 
-        } catch (error) {
-            document.getElementById('footerMsg').textContent = 'WARNING: SENSOR UPLINK FAILURE. RETRYING...';
-            addLog('WARN', 'UPLINK FAILURE: ' + error.message);
-            console.error('Failed to fetch state:', error);
-        }
-    }
+    <footer class="footer">
+        &gt; SENSOR DATA UPDATED. ALL READINGS NOMINAL.
+    </footer>
 
-    // ---- CONTROLS ----
-    async function toggleRelay() {
-        try {
-            const response = await fetch(`${API}/api/state`);
-            const data = await response.json();
-            await fetch(`${API}/api/control`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ relay: !data.relay })
-            });
-            addLog('INFO', 'RELAY TOGGLED → ' + (!data.relay ? 'CLOSED' : 'OPEN'));
-            fetchState();
-        } catch(e) {
-            addLog('CRIT', 'RELAY CONTROL FAILED');
-        }
-    }
+</div>
 
-    async function toggleAuto() {
-        try {
-            const response = await fetch(`${API}/api/state`);
-            const data = await response.json();
-            await fetch(`${API}/api/control`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ auto_mode: !data.auto_mode })
-            });
-            addLog('INFO', 'AUTO MODE → ' + (!data.auto_mode ? 'ENABLED' : 'DISABLED'));
-            fetchState();
-        } catch(e) {
-            addLog('CRIT', 'AUTO MODE CONTROL FAILED');
-        }
-    }
-
-    async function manualRefresh() {
-        addLog('INFO', 'MANUAL SENSOR POLL INITIATED');
-        await fetchState();
-        addLog('INFO', 'SENSOR POLL COMPLETE');
-    }
-
-    setInterval(fetchState, 2000);
-    fetchState();
-</script>
+<script src="/static/script.js"></script>
 </body>
 </html>
