@@ -3,18 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <title>Plant Monitor System</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css?v=7">
 </head>
 <body>
+
+<div class="noise"></div>
+<div class="scanline"></div>
+<div class="alarm-overlay" id="alarmOverlay">WARNING // BUZZER ACTIVE // CHECK WATER LEVEL</div>
 
 <div class="crt">
 
     <header class="top-panel">
         <div>
-            <div class="system-title">PLANT MONITOR SYSTEM v1.0</div>
-            <div class="sub-title">NODE AZ-01 // CLOUD LINK ACTIVE</div>
+            <div class="system-title typing">PLANT MONITOR SYSTEM v1.0</div>
+            <div class="sub-title">NODE AZ-01 // CLOUD LINK ACTIVE // JSON/REST</div>
         </div>
-        <div class="clock">SYS/ONLINE</div>
+
+        <div class="clock">
+            <span id="clock">--:--:--</span>
+            <div class="packet">PKT/<span id="packetCounter">0000</span></div>
+        </div>
     </header>
 
     <section class="dashboard-grid">
@@ -35,6 +43,12 @@
                 <strong>ACTIVE</strong>
             </div>
 
+            <div class="status-row">
+                <span>LAST POLL</span>
+                <strong id="lastPoll">--:--:--</strong>
+            </div>
+
+            <div class="health-label">SYSTEM HEALTH [ NaN% ]</div>
             <div class="health-bar">
                 <span></span><span></span><span></span><span></span><span></span>
                 <span></span><span></span><span></span><span></span><span></span>
@@ -51,6 +65,8 @@
             <div class="mini-log">
                 <p>MODE: AUTO CONTROL</p>
                 <p>FORMAT: JSON / REST</p>
+                <p>BUS: I2C / UART</p>
+                <p>STATUS: WATCHING</p>
             </div>
         </div>
 
@@ -75,6 +91,10 @@
             <div class="threshold-row">
                 <span>AUTO TRIGGER</span>
                 <strong>ENABLED</strong>
+            </div>
+
+            <div class="radar">
+                <div class="radar-sweep"></div>
             </div>
         </div>
 
@@ -138,22 +158,40 @@
 
                     <div class="actuator-card">
                         <div class="channel">OUTPUT 01 // RELAY MODULE</div>
-                        <h3>RELAY</h3>
-                        <div class="actuator-state" id="relay">OFF</div>
+                        <div class="actuator-header">
+                            <div>
+                                <h3>RELAY</h3>
+                                <div class="actuator-state" id="relay">OFF</div>
+                            </div>
+                            <div class="icon relay-icon">⚡</div>
+                        </div>
+                        <div class="status-text" id="relayText">[ INACTIVE ]</div>
                         <button onclick="toggleRelay()">▣ TOGGLE</button>
                     </div>
 
                     <div class="actuator-card">
                         <div class="channel">OUTPUT 02 // LED DRIVER</div>
-                        <h3>LED</h3>
-                        <div class="actuator-state" id="led">OFF</div>
+                        <div class="actuator-header">
+                            <div>
+                                <h3>LED</h3>
+                                <div class="actuator-state" id="led">OFF</div>
+                            </div>
+                            <div class="icon led-icon">☀</div>
+                        </div>
+                        <div class="status-text" id="ledText">[ INACTIVE ]</div>
                         <button onclick="toggleLed()">▣ TOGGLE</button>
                     </div>
 
                     <div class="actuator-card">
                         <div class="channel">OUTPUT 03 // BUZZER UNIT</div>
-                        <h3>BUZZER</h3>
-                        <div class="actuator-state" id="buzzer">OFF</div>
+                        <div class="actuator-header">
+                            <div>
+                                <h3>BUZZER</h3>
+                                <div class="actuator-state" id="buzzer">OFF</div>
+                            </div>
+                            <div class="icon buzzer-icon">🔊</div>
+                        </div>
+                        <div class="status-text" id="buzzerText">[ INACTIVE ]</div>
                         <button onclick="toggleBuzzer()">▣ TOGGLE</button>
                     </div>
 
@@ -166,7 +204,7 @@
                     <span>LOG/005</span>
                 </div>
 
-                <div class="log-lines">
+                <div class="log-lines" id="logLines">
                     <p><span>INFO</span> BACKEND CONNECTED</p>
                     <p><span>INFO</span> WAITING FOR SENSOR PACKETS</p>
                     <p><span>INFO</span> RELAY MODULE READY</p>
@@ -180,39 +218,42 @@
 
         <section class="horror-panel">
             <div class="camera-header">
-                <span>CAM-01</span>
+                <span>CAM-01 // NIGHT FEED</span>
                 <span class="rec">● REC</span>
             </div>
 
             <div class="horror-screen">
-<pre>
-       ▄████████▄
-     ▄██▀  ▄▄  ▀██▄
-    ██▀   ◉  ◉   ▀██
-   ██      ▄▄▄      ██
-   ██   ▄█▀▀▀▀▀█▄   ██
-    ██   ▀▄▄▄▄▄▀   ██
-     ▀██▄       ▄██▀
-        ▀███████▀
-       ▄██  █  ██▄
-      ██    █    ██
-     ██   UNIT-01  ██
-</pre>
+                <div class="animatronic">
+                    <div class="ear left-ear"></div>
+                    <div class="ear right-ear"></div>
+                    <div class="head">
+                        <div class="eye left-eye"></div>
+                        <div class="eye right-eye"></div>
+                        <div class="snout">
+                            <div class="nose"></div>
+                            <div class="mouth"></div>
+                        </div>
+                        <div class="teeth"></div>
+                    </div>
+                    <div class="body-core">UNIT-01</div>
+                </div>
+
+                <div class="no-signal" id="noSignal">NO SIGNAL</div>
             </div>
 
             <div class="camera-text">
-                NIGHT MONITOR ACTIVE // MOTION UNKNOWN
+                MOTION UNKNOWN // AUDIO DISTORTION DETECTED
             </div>
         </section>
 
     </section>
 
-    <footer class="footer">
+    <footer class="footer" id="footerMessage">
         &gt; SENSOR DATA UPDATED. ALL READINGS NOMINAL.
     </footer>
 
 </div>
 
-<script src="/static/script.js"></script>
+<script src="/static/script.js?v=7"></script>
 </body>
 </html>
