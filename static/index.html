@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Plant Monitor</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>Plant Monitor Dashboard</h1>
+
+    <div class="card">
+        <p>Temperature: <span id="temperature">0</span> °C</p>
+        <p>Humidity: <span id="humidity">0</span> %</p>
+        <p>Water: <span id="water">0</span></p>
+        <p>Soil: <span id="soil">0</span></p>
+        <p>Relay / LED: <span id="relay">OFF</span></p>
+        <p>Auto Mode: <span id="auto">OFF</span></p>
+    </div>
+
+    <div class="buttons">
+        <button onclick="toggleRelay()">Toggle Relay / LED</button>
+        <button onclick="toggleAuto()">Toggle Auto Mode</button>
+    </div>
+</div>
+
+<script src="/static/script.js"></script>
+</body>
+</html>
