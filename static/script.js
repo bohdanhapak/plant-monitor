@@ -1,28 +1,21 @@
 const API = "";
 
 async function fetchState() {
-    try {
-        const response = await fetch(`${API}/api/state`);
-        const data = await response.json();
+    const response = await fetch(`${API}/api/state`);
+    const data = await response.json();
 
-        document.getElementById("temperature").innerText = data.temperature;
-        document.getElementById("humidity").innerText = data.humidity;
-        document.getElementById("water").innerText = data.water;
-        document.getElementById("soil").innerText = data.soil;
+    document.getElementById("air_humidity").innerText = data.air_humidity;
+    document.getElementById("water").innerText = data.water;
+    document.getElementById("soil").innerText = data.soil;
 
-        document.getElementById("relay").innerText = data.relay ? "ON" : "OFF";
-        document.getElementById("auto").innerText = data.auto_mode ? "ON" : "OFF";
+    document.getElementById("relay").innerText = data.relay ? "ON" : "OFF";
+    document.getElementById("led").innerText = data.led ? "ON" : "OFF";
+    document.getElementById("buzzer").innerText = data.buzzer ? "ON" : "OFF";
+    document.getElementById("auto").innerText = data.auto_mode ? "ON" : "OFF";
 
-        document.getElementById("mainStatus").innerText = data.relay ? "ACTIVE" : "NORMAL";
-
-        updateBar("tempBar", data.temperature, 50);
-        updateBar("humidityBar", data.humidity, 100);
-        updateBar("waterBar", data.water, 1023);
-        updateBar("soilBar", data.soil, 1023);
-
-    } catch (error) {
-        console.error("Failed to fetch state:", error);
-    }
+    updateBar("humidityBar", data.air_humidity, 100);
+    updateBar("waterBar", data.water, 1023);
+    updateBar("soilBar", data.soil, 1023);
 }
 
 function updateBar(id, value, max) {
@@ -30,35 +23,39 @@ function updateBar(id, value, max) {
     document.getElementById(id).style.width = `${percent}%`;
 }
 
-async function toggleRelay() {
-    const response = await fetch(`${API}/api/state`);
-    const data = await response.json();
+async function toggleAuto() {
+    const state = await fetch(`${API}/api/state`);
+    const data = await state.json();
 
     await fetch(`${API}/api/control`, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            relay: !data.relay
-        })
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({auto_mode: !data.auto_mode})
     });
 
     fetchState();
 }
 
-async function toggleAuto() {
-    const response = await fetch(`${API}/api/state`);
-    const data = await response.json();
+async function toggleRelay() {
+    await toggleActuator("relay");
+}
+
+async function toggleLed() {
+    await toggleActuator("led");
+}
+
+async function toggleBuzzer() {
+    await toggleActuator("buzzer");
+}
+
+async function toggleActuator(name) {
+    const state = await fetch(`${API}/api/state`);
+    const data = await state.json();
 
     await fetch(`${API}/api/control`, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            auto_mode: !data.auto_mode
-        })
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({[name]: !data[name]})
     });
 
     fetchState();
