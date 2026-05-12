@@ -1,18 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
 
 :root {
-    --bg:         #0a0800;
-    --bg2:        #110e00;
-    --panel:      #0e0b00;
-    --amber:      #ffb000;
-    --amber-dim:  #7a5200;
-    --amber-soft: rgba(255,176,0,0.10);
-    --amber-glow: rgba(255,176,0,0.30);
-    --amber-mid:  #e07800;
-    --text:       #ffe08a;
-    --red:        #ff4422;
-    --red-glow:   rgba(255,68,34,0.5);
-    --orange:     #ff6a00;
+    --bg:         #020402;
+    --bg2:        #041104;
+    --panel:      #031503;
+
+    --amber:      #00ff66;
+    --amber-dim:  #0f5f2e;
+    --amber-soft: rgba(0,255,102,0.10);
+    --amber-glow: rgba(0,255,102,0.30);
+    --amber-mid:  #00cc55;
+
+    --text:       #9dffb8;
+
+    --red:        #ff2d2d;
+    --red-glow:   rgba(255,45,45,0.5);
+
+    --orange:     #00ff88;
+
     --border:     2px solid var(--amber);
     --border-dim: 1px solid var(--amber-dim);
 }
