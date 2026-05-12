@@ -6,6 +6,7 @@ async function fetchState() {
     try {
         const response = await fetch(`${API}/api/state`);
         const data = await response.json();
+        const motionDetected = Number(data.soil) === 1;
 
         packetCounter++;
 
@@ -17,7 +18,7 @@ async function fetchState() {
 
         document.getElementById("air_humidity").innerText = data.air_humidity;
         document.getElementById("water").innerText = data.water;
-        document.getElementById("motion").innerText = data.soil ? "MOVING" : "CLEAR";
+        document.getElementById("motion").innerText = motionDetected ? "MOVING" : "CLEAR";
 
         document.getElementById("auto").innerText = data.auto_mode ? "ON" : "OFF";
         document.getElementById("systemHealth").innerText = data.system_health;
@@ -28,7 +29,7 @@ async function fetchState() {
 
         updateBar("humidityBar", data.air_humidity, 100);
         updateBar("waterBar", data.water, 300);
-        updateBar("motionBar", data.soil ? 1 : 0, 1);
+        updateBar("motionBar", motionDetected ? 1 : 0, 1);
 
         updateMainStatus(data);
         updateHorrorMode(data);
