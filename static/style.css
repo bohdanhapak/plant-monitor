@@ -152,25 +152,77 @@ button:active { background:rgba(255,176,0,0.3); }
 .mini-log p::before { content:'> '; color:var(--amber-mid); }
 
 .radar {
-    width:150px; height:150px; border:2px solid var(--amber);
-    border-radius:50%; margin:22px auto 0; position:relative; overflow:hidden;
-    box-shadow:0 0 24px rgba(255,176,0,0.2),inset 0 0 20px rgba(0,0,0,0.8);
-    background:radial-gradient(circle,rgba(255,176,0,0.04) 0%,transparent 70%),
-               repeating-conic-gradient(rgba(255,176,0,0.06) 0deg 3deg,transparent 3deg 30deg);
-}
-.radar::before {
-    content:''; position:absolute; inset:0; border-radius:50%;
+    width: 150px;
+    height: 150px;
+    border: 2px solid var(--amber);
+    border-radius: 50%;
+    margin: 22px auto 0;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+        0 0 24px var(--amber-glow),
+        inset 0 0 20px rgba(0,0,0,0.8);
     background:
-        radial-gradient(circle at 50% 50%,transparent 30%,rgba(255,176,0,0.08) 30.5%,transparent 31%),
-        radial-gradient(circle at 50% 50%,transparent 60%,rgba(255,176,0,0.06) 60.5%,transparent 61%),
-        linear-gradient(90deg,transparent 49.5%,rgba(255,176,0,0.1) 50%,transparent 50.5%),
-        linear-gradient(0deg,transparent 49.5%,rgba(255,176,0,0.1) 50%,transparent 50.5%);
-    pointer-events:none; z-index:1;
+        radial-gradient(circle, transparent 0 28%, rgba(0,255,102,0.10) 29%, transparent 30%),
+        radial-gradient(circle, transparent 0 58%, rgba(0,255,102,0.10) 59%, transparent 60%),
+        repeating-conic-gradient(
+            from 0deg,
+            rgba(0,255,102,0.13) 0deg 1deg,
+            transparent 1deg 30deg
+        ),
+        rgba(0, 20, 0, 0.85);
 }
+
+.radar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background:
+        linear-gradient(90deg, transparent 49.5%, rgba(0,255,102,0.22) 50%, transparent 50.5%),
+        linear-gradient(0deg, transparent 49.5%, rgba(0,255,102,0.22) 50%, transparent 50.5%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.radar::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    background: var(--amber);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 10px var(--amber);
+    z-index: 4;
+}
+
 .radar-sweep {
-    position:absolute; width:50%; height:50%;
-    background:conic-gradient(from 0deg,rgba(255,176,0,0.6),rgba(255,120,0,0.3),transparent 60deg);
-    transform-origin:bottom right; animation:radarSpin 3s linear infinite; z-index:2;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 75px;
+    height: 75px;
+    background: conic-gradient(
+        from -35deg,
+        rgba(0,255,102,0.65) 0deg,
+        rgba(0,255,102,0.30) 25deg,
+        transparent 60deg
+    );
+    transform-origin: 0 0;
+    animation: radarSpin 3s linear infinite;
+    z-index: 3;
+}
+
+@keyframes radarSpin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .sensor-grid,.actuator-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
