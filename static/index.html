@@ -84,8 +84,8 @@
             </div>
 
             <div class="threshold-row">
-                <span>SOIL MOISTURE</span>
-                <strong>&lt; 300</strong>
+                <span>MOTION SENSOR</span>
+                <strong>CLEAR / MOVING</strong>
             </div>
 
             <div class="threshold-row">
@@ -123,25 +123,25 @@
             <div class="sensor-card">
                 <div class="channel">CHANNEL 02 // ANALOG-0</div>
                 <h3>WATER LEVEL</h3>
-                <div class="sensor-value"><span id="water">0</span> /1023</div>
+                <div class="sensor-value"><span id="water">0</span> /300</div>
                 <div class="scale">
                     <span>0</span>
                     <span>LEVEL</span>
-                    <span>1023</span>
+                    <span>300</span>
                 </div>
                 <div class="bar"><div id="waterBar"></div></div>
             </div>
 
             <div class="sensor-card">
-                <div class="channel">CHANNEL 03 // ANALOG-1</div>
-                <h3>SOIL MOISTURE</h3>
-                <div class="sensor-value"><span id="soil">0</span> /1023</div>
+                <div class="channel">CHANNEL 03 // DIGITAL-1</div>
+                <h3>MOTION SENSOR</h3>
+                <div class="sensor-value"><span id="motion">CLEAR</span></div>
                 <div class="scale">
-                    <span>0</span>
-                    <span>LEVEL</span>
-                    <span>1023</span>
+                    <span>CLEAR</span>
+                    <span>STATE</span>
+                    <span>MOVING</span>
                 </div>
-                <div class="bar"><div id="soilBar"></div></div>
+                <div class="bar"><div id="motionBar"></div></div>
             </div>
 
         </div>

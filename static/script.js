@@ -17,7 +17,7 @@ async function fetchState() {
 
         document.getElementById("air_humidity").innerText = data.air_humidity;
         document.getElementById("water").innerText = data.water;
-        document.getElementById("soil").innerText = data.soil;
+        document.getElementById("motion").innerText = data.soil ? "MOVING" : "CLEAR";
 
         document.getElementById("auto").innerText = data.auto_mode ? "ON" : "OFF";
         document.getElementById("systemHealth").innerText = data.system_health;
@@ -27,8 +27,8 @@ async function fetchState() {
         setActuator("buzzer", "buzzerText", data.buzzer);
 
         updateBar("humidityBar", data.air_humidity, 100);
-        updateBar("waterBar", data.water, 1023);
-        updateBar("soilBar", data.soil, 1023);
+        updateBar("waterBar", data.water, 300);
+        updateBar("motionBar", data.soil ? 1 : 0, 1);
 
         updateMainStatus(data);
         updateHorrorMode(data);
@@ -97,7 +97,7 @@ function updateFooter(data) {
     if (data.buzzer) {
         footer.innerText = "> WARNING: WATER LEVEL BELOW THRESHOLD. BUZZER ACTIVE.";
     } else if (data.relay) {
-        footer.innerText = "> SOIL MOISTURE LOW. RELAY ACTIVATED.";
+        footer.innerText = "> MOTION DETECTED. RELAY ACTIVATED.";
     } else if (data.led) {
         footer.innerText = "> AIR HUMIDITY LOW. LED INDICATOR ACTIVE.";
     } else {
