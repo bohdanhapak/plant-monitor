@@ -7,7 +7,8 @@ async function fetchState() {
     try {
         const response = await fetch(`${API}/api/state`);
         const data = await response.json();
-        const motionDetected = Number(data.motion) === 1;
+        const motionValue = data.soil ?? data.motion ?? 0;
+        const motionDetected = Number(motionValue) === 1;
 
         if (motionDetected) {
             motionHoldUntil = Date.now() + 10000;
