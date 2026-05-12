@@ -144,8 +144,13 @@ async function toggleActuator(name) {
     const data = await response.json();
 
     if (data.auto_mode) {
-        addLog("WARN", "DISABLE AUTO MODE BEFORE MANUAL CONTROL");
-        return;
+        await fetch(`${API}/api/control`, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({auto_mode: false})
+        });
+
+        addLog("INFO", "AUTO MODE DISABLED FOR MANUAL CONTROL");
     }
 
     await fetch(`${API}/api/control`, {
