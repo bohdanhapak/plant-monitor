@@ -8,9 +8,10 @@ async function fetchState() {
         const data = await response.json();
 
         packetCounter++;
-        document.getElementById("packetCounter").innerText = String(packetCounter).padStart(4, "0");
 
         const now = new Date().toLocaleTimeString();
+
+        document.getElementById("packetCounter").innerText = String(packetCounter).padStart(4, "0");
         document.getElementById("clock").innerText = now;
         document.getElementById("lastPoll").innerText = now;
 
@@ -19,6 +20,7 @@ async function fetchState() {
         document.getElementById("soil").innerText = data.soil;
 
         document.getElementById("auto").innerText = data.auto_mode ? "ON" : "OFF";
+        document.getElementById("systemHealth").innerText = data.system_health;
 
         setActuator("relay", "relayText", data.relay);
         setActuator("led", "ledText", data.led);
@@ -31,6 +33,7 @@ async function fetchState() {
         updateMainStatus(data);
         updateHorrorMode(data);
         updateFooter(data);
+        addLog("INFO", data.last_event);
 
     } catch (error) {
         console.error("Failed to fetch state:", error);
@@ -132,6 +135,11 @@ async function toggleActuator(name) {
     const response = await fetch(`${API}/api/state`);
     const data = await response.json();
 
+    if (data.auto_mode) {
+        addLog("WARN", "DISABLE AUTO MODE BEFORE MANUAL CONTROL");
+        return;
+    }
+
     await fetch(`${API}/api/control`, {
         method: "POST",
         headers: {"Content-Type": "application/json"},
@@ -151,13 +159,18 @@ function addLog(type, message) {
     const log = document.getElementById("logLines");
     const time = new Date().toLocaleTimeString();
 
+    const last = log.lastElementChild;
+    if (last && last.innerText.includes(message)) {
+        return;
+    }
+
     const line = document.createElement("p");
     line.innerHTML = `<span>${type}</span> ${time} // ${message}`;
 
     log.appendChild(line);
 
     const items = log.querySelectorAll("p");
-    if (items.length > 8) {
+    if (items.length > 10) {
         items[0].remove();
     }
 }

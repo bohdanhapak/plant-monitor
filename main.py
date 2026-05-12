@@ -11,7 +11,6 @@ from state import (
 )
 
 app = FastAPI()
-
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
@@ -28,6 +27,54 @@ class ControlData(BaseModel):
     auto_mode: bool | None = None
 
 
+def calculate_health():
+    health = 100
+
+    if state["air_humidity"] < THRESHOLD_AIR_HUMIDITY:
+        health -= 20
+
+    if state["water"] < THRESHOLD_WATER:
+        health -= 30
+
+    if state["soil"] < THRESHOLD_SOIL:
+        health -= 30
+
+    if state["buzzer"]:
+        health -= 10
+
+    return max(0, health)
+
+
+def run_automation():
+    events = []
+
+    if state["auto_mode"]:
+        if state["soil"] < THRESHOLD_SOIL:
+            state["relay"] = True
+            events.append("SOIL LOW -> RELAY ON")
+        else:
+            state["relay"] = False
+
+        if state["air_humidity"] < THRESHOLD_AIR_HUMIDITY:
+            state["led"] = True
+            events.append("AIR HUMIDITY LOW -> LED ON")
+        else:
+            state["led"] = False
+
+        if state["water"] < THRESHOLD_WATER:
+            state["buzzer"] = True
+            events.append("WATER LOW -> BUZZER ON")
+        else:
+            state["buzzer"] = False
+
+    state["system_health"] = calculate_health()
+
+    if events:
+        state["last_event"] = " | ".join(events)
+    else:
+        state["last_event"] = "ALL READINGS NOMINAL"
+
+
 @app.get("/")
 def frontend():
     return FileResponse("static/index.html")
@@ -39,10 +86,7 @@ def sensors(data: SensorData):
     state["water"] = data.water
     state["soil"] = data.soil
 
-    if state["auto_mode"]:
-        state["relay"] = data.soil < THRESHOLD_SOIL
-        state["buzzer"] = data.water < THRESHOLD_WATER
-        state["led"] = data.air_humidity < THRESHOLD_AIR_HUMIDITY
+    run_automation()
 
     return {
         "success": True,
@@ -59,15 +103,21 @@ def get_state():
 def control(data: ControlData):
     if data.auto_mode is not None:
         state["auto_mode"] = data.auto_mode
+        state["last_event"] = "AUTO MODE CHANGED"
 
     if not state["auto_mode"]:
         if data.relay is not None:
             state["relay"] = data.relay
+            state["last_event"] = "MANUAL RELAY CONTROL"
 
         if data.led is not None:
             state["led"] = data.led
+            state["last_event"] = "MANUAL LED CONTROL"
 
         if data.buzzer is not None:
             state["buzzer"] = data.buzzer
+            state["last_event"] = "MANUAL BUZZER CONTROL"
+
+    state["system_health"] = calculate_health()
 
     return state

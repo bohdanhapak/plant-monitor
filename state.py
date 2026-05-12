@@ -7,7 +7,9 @@ state = {
     "led": False,
     "buzzer": False,
 
-    "auto_mode": True
+    "auto_mode": True,
+    "system_health": 100,
+    "last_event": "SYSTEM STARTED"
 }
 
 THRESHOLD_AIR_HUMIDITY = 40
