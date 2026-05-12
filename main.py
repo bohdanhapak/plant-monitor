@@ -6,8 +6,7 @@ from pydantic import BaseModel
 from state import (
     state,
     THRESHOLD_AIR_HUMIDITY,
-    THRESHOLD_WATER,
-    THRESHOLD_SOIL
+    THRESHOLD_WATER
 )
 
 app = FastAPI()
@@ -17,7 +16,8 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 class SensorData(BaseModel):
     air_humidity: float
     water: int
-    soil: int
+    soil: int | None = None
+    motion: bool | int | None = None
 
 
 class ControlData(BaseModel):
@@ -36,9 +36,6 @@ def calculate_health():
     if state["water"] < THRESHOLD_WATER:
         health -= 30
 
-    if state["soil"] < THRESHOLD_SOIL:
-        health -= 30
-
     if state["buzzer"]:
         health -= 10
 
@@ -49,9 +46,9 @@ def run_automation():
     events = []
 
     if state["auto_mode"]:
-        if state["soil"] < THRESHOLD_SOIL:
+        if state["motion"] == 1:
             state["relay"] = True
-            events.append("SOIL LOW -> RELAY ON")
+            events.append("MOTION DETECTED -> RELAY ON")
         else:
             state["relay"] = False
 
@@ -84,7 +81,12 @@ def frontend():
 def sensors(data: SensorData):
     state["air_humidity"] = data.air_humidity
     state["water"] = data.water
-    state["soil"] = data.soil
+
+    if data.soil is not None:
+        state["soil"] = data.soil
+
+    if data.motion is not None:
+        state["motion"] = 1 if bool(data.motion) else 0
 
     run_automation()
 

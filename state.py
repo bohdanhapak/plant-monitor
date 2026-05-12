@@ -2,6 +2,7 @@ state = {
     "air_humidity": 0,
     "water": 0,
     "soil": 0,
+    "motion": 0,
 
     "relay": False,
     "led": False,
