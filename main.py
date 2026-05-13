@@ -90,11 +90,12 @@ def sensors(data: SensorData):
 
     if data.soil is not None:
         state["soil"] = data.soil
-        if data.motion is None:
-            state["motion"] = 1 if data.soil == 1 else 0
+        state["motion"] = 1 if data.soil == 1 else 0
 
     if data.motion is not None:
-        state["motion"] = 1 if bool(data.motion) else 0
+        motion_value = 1 if bool(data.motion) else 0
+        state["motion"] = motion_value
+        state["soil"] = motion_value
 
     run_automation()
 
