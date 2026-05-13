@@ -144,16 +144,6 @@ async function toggleActuator(name) {
     const response = await fetch(`${API}/api/state`);
     const data = await response.json();
 
-    if (data.auto_mode) {
-        await fetch(`${API}/api/control`, {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({auto_mode: false})
-        });
-
-        addLog("INFO", "AUTO MODE DISABLED FOR MANUAL CONTROL");
-    }
-
     await fetch(`${API}/api/control`, {
         method: "POST",
         headers: {"Content-Type": "application/json"},

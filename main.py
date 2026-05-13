@@ -1,3 +1,5 @@
+import time
+
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -46,9 +48,16 @@ def run_automation():
     events = []
 
     if state["auto_mode"]:
-        if state["motion"] == 1:
+        now = time.time()
+
+        if now < state["manual_override_until"]:
+            state["system_health"] = calculate_health()
+            state["last_event"] = "MANUAL OVERRIDE ACTIVE"
+            return
+
+        if state["water"] < THRESHOLD_WATER:
             state["relay"] = True
-            events.append("MOTION DETECTED -> RELAY ON")
+            events.append("WATER LOW -> RELAY ON")
         else:
             state["relay"] = False
 
@@ -58,18 +67,15 @@ def run_automation():
         else:
             state["led"] = False
 
-        if state["water"] < THRESHOLD_WATER:
+        if state["motion"]:
             state["buzzer"] = True
-            events.append("WATER LOW -> BUZZER ON")
+            state["led"] = True
+            events.append("MOTION DETECTED -> ALARM ON")
         else:
             state["buzzer"] = False
 
     state["system_health"] = calculate_health()
-
-    if events:
-        state["last_event"] = " | ".join(events)
-    else:
-        state["last_event"] = "ALL READINGS NOMINAL"
+    state["last_event"] = " | ".join(events) if events else "ALL READINGS NOMINAL"
 
 
 @app.get("/")
@@ -84,6 +90,8 @@ def sensors(data: SensorData):
 
     if data.soil is not None:
         state["soil"] = data.soil
+        if data.motion is None:
+            state["motion"] = 1 if data.soil == 1 else 0
 
     if data.motion is not None:
         state["motion"] = 1 if bool(data.motion) else 0
@@ -107,18 +115,20 @@ def control(data: ControlData):
         state["auto_mode"] = data.auto_mode
         state["last_event"] = "AUTO MODE CHANGED"
 
-    if not state["auto_mode"]:
-        if data.relay is not None:
-            state["relay"] = data.relay
-            state["last_event"] = "MANUAL RELAY CONTROL"
+    if data.relay is not None:
+        state["relay"] = data.relay
+        state["manual_override_until"] = time.time() + 5
+        state["last_event"] = "MANUAL RELAY OVERRIDE 5 SEC"
 
-        if data.led is not None:
-            state["led"] = data.led
-            state["last_event"] = "MANUAL LED CONTROL"
+    if data.led is not None:
+        state["led"] = data.led
+        state["manual_override_until"] = time.time() + 5
+        state["last_event"] = "MANUAL LED OVERRIDE 5 SEC"
 
-        if data.buzzer is not None:
-            state["buzzer"] = data.buzzer
-            state["last_event"] = "MANUAL BUZZER CONTROL"
+    if data.buzzer is not None:
+        state["buzzer"] = data.buzzer
+        state["manual_override_until"] = time.time() + 5
+        state["last_event"] = "MANUAL BUZZER OVERRIDE 5 SEC"
 
     state["system_health"] = calculate_health()
 

@@ -10,7 +10,8 @@ state = {
 
     "auto_mode": True,
     "system_health": 100,
-    "last_event": "SYSTEM STARTED"
+    "last_event": "SYSTEM STARTED",
+    "manual_override_until": 0
 }
 
 THRESHOLD_AIR_HUMIDITY = 40
