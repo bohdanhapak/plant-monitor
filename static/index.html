@@ -2,53 +2,62 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Plant Monitor System</title>
-    <link rel="stylesheet" href="/static/style.css?v=7">
+    <title>Plant Monitor System v1.0</title>
+    <link rel="stylesheet" href="/static/style.css?v=8">
 </head>
 <body>
 
-<div class="noise"></div>
 <div class="scanline"></div>
-<div class="alarm-overlay" id="alarmOverlay">WARNING // BUZZER ACTIVE // CHECK WATER LEVEL</div>
+<div class="alarm-overlay" id="alarmOverlay">⚠ WARNING // BUZZER ACTIVE // CHECK WATER LEVEL ⚠</div>
 
 <div class="crt">
 
+    <!-- WIN95-STYLE TITLE BAR -->
     <header class="top-panel">
         <div>
-            <div class="system-title typing">PLANT MONITOR SYSTEM v1.0</div>
-            <div class="sub-title">NODE AZ-01 // CLOUD LINK ACTIVE // JSON/REST</div>
+            <div class="system-title typing">🌿 Plant Monitor System v1.0</div>
+            <div class="sub-title">NODE AZ-01 &nbsp;|&nbsp; CLOUD LINK ACTIVE &nbsp;|&nbsp; JSON/REST</div>
         </div>
-
         <div class="clock">
             <span id="clock">--:--:--</span>
             <div class="packet">PKT/<span id="packetCounter">0000</span></div>
         </div>
     </header>
 
+    <!-- WIN-STYLE MENU BAR -->
+    <div class="menu-bar">
+        <span><u>F</u>ile</span>
+        <span><u>V</u>iew</span>
+        <span><u>C</u>ontrol</span>
+        <span><u>S</u>ensors</span>
+        <span><u>H</u>elp</span>
+    </div>
+
+    <!-- TOP DASHBOARD ROW -->
     <section class="dashboard-grid">
 
         <div class="panel status-panel">
-            <div class="panel-label">SYSTEM STATUS</div>
+            <div class="panel-label">&#9632; SYSTEM STATUS</div>
 
             <div class="status-main" id="mainStatus">NOMINAL</div>
             <div class="status-sub">ALL SYSTEMS OPERATIONAL</div>
 
             <div class="status-row">
-                <span>AUTO MODE</span>
+                <span><span class="led-indicator" id="autoLed"></span>AUTO MODE</span>
                 <strong id="auto">ON</strong>
             </div>
 
             <div class="status-row">
-                <span>UPLINK</span>
+                <span><span class="led-indicator"></span>UPLINK</span>
                 <strong>ACTIVE</strong>
             </div>
 
             <div class="status-row">
-                <span>LAST POLL</span>
+                <span><span class="led-indicator"></span>LAST POLL</span>
                 <strong id="lastPoll">--:--:--</strong>
             </div>
 
-           <div class="health-label">SYSTEM HEALTH [ <span id="systemHealth">100</span>% ]</div>
+            <div class="health-label">SYSTEM HEALTH [ <span id="systemHealth">100</span>% ]</div>
             <div class="health-bar">
                 <span></span><span></span><span></span><span></span><span></span>
                 <span></span><span></span><span></span><span></span><span></span>
@@ -57,10 +66,12 @@
         </div>
 
         <div class="panel automation-panel">
-            <div class="panel-label">AUTOMATION</div>
+            <div class="panel-label">&#9632; AUTOMATION</div>
 
-            <button onclick="toggleAuto()">▣ TOGGLE AUTO MODE</button>
-            <button onclick="forcePoll()">▣ FORCE SENSOR POLL</button>
+            <button onclick="toggleAuto()">&#9632; TOGGLE AUTO MODE</button>
+            <button onclick="forcePoll()">&#9632; FORCE SENSOR POLL</button>
+
+            <div class="win-separator" style="margin-top:12px;"></div>
 
             <div class="mini-log">
                 <p>MODE: AUTO CONTROL</p>
@@ -71,7 +82,7 @@
         </div>
 
         <div class="panel threshold-panel">
-            <div class="panel-label">THRESHOLDS</div>
+            <div class="panel-label">&#9632; THRESHOLDS</div>
 
             <div class="threshold-row">
                 <span>AIR HUMIDITY</span>
@@ -100,9 +111,10 @@
 
     </section>
 
+    <!-- SENSOR ARRAY -->
     <section class="sensor-section">
         <div class="section-title">
-            SENSOR ARRAY - REAL-TIME BIOMETRIC READINGS
+            &#9632; SENSOR ARRAY — REAL-TIME BIOMETRIC READINGS
             <span>SYS/001</span>
         </div>
 
@@ -113,9 +125,7 @@
                 <h3>AIR HUMIDITY</h3>
                 <div class="sensor-value"><span id="air_humidity">0</span> %</div>
                 <div class="scale">
-                    <span>0%</span>
-                    <span>LEVEL</span>
-                    <span>100%</span>
+                    <span>0%</span><span>LEVEL</span><span>100%</span>
                 </div>
                 <div class="bar"><div id="humidityBar"></div></div>
             </div>
@@ -125,9 +135,7 @@
                 <h3>WATER LEVEL</h3>
                 <div class="sensor-value"><span id="water">0</span> /300</div>
                 <div class="scale">
-                    <span>0</span>
-                    <span>LEVEL</span>
-                    <span>300</span>
+                    <span>0</span><span>LEVEL</span><span>300</span>
                 </div>
                 <div class="bar"><div id="waterBar"></div></div>
             </div>
@@ -137,9 +145,7 @@
                 <h3>MOTION SENSOR</h3>
                 <div class="sensor-value"><span id="motion">0</span> /1</div>
                 <div class="scale">
-                    <span>0</span>
-                    <span>STATE</span>
-                    <span>1</span>
+                    <span>0</span><span>STATE</span><span>1</span>
                 </div>
                 <div class="bar"><div id="motionBar"></div></div>
             </div>
@@ -147,12 +153,14 @@
         </div>
     </section>
 
+    <!-- BOTTOM GRID -->
     <section class="bottom-grid">
 
         <div class="left-column">
 
+            <!-- ACTUATORS -->
             <section class="actuator-section">
-                <div class="section-title">ACTUATOR STATUS - OUTPUT CONTROL</div>
+                <div class="section-title">&#9632; ACTUATOR STATUS — OUTPUT CONTROL</div>
 
                 <div class="actuator-grid">
 
@@ -161,12 +169,12 @@
                         <div class="actuator-header">
                             <div>
                                 <h3>RELAY</h3>
-                                <div class="actuator-state" id="relay">OFF</div>
+                                <div class="actuator-state off" id="relay">OFF</div>
                             </div>
                             <div class="icon relay-icon">⚡</div>
                         </div>
                         <div class="status-text" id="relayText">[ INACTIVE ]</div>
-                        <button onclick="toggleRelay()">▣ TOGGLE</button>
+                        <button onclick="toggleRelay()">&#9632; TOGGLE</button>
                     </div>
 
                     <div class="actuator-card">
@@ -174,12 +182,12 @@
                         <div class="actuator-header">
                             <div>
                                 <h3>LED</h3>
-                                <div class="actuator-state" id="led">OFF</div>
+                                <div class="actuator-state off" id="led">OFF</div>
                             </div>
                             <div class="icon led-icon">☀</div>
                         </div>
                         <div class="status-text" id="ledText">[ INACTIVE ]</div>
-                        <button onclick="toggleLed()">▣ TOGGLE</button>
+                        <button onclick="toggleLed()">&#9632; TOGGLE</button>
                     </div>
 
                     <div class="actuator-card">
@@ -187,20 +195,21 @@
                         <div class="actuator-header">
                             <div>
                                 <h3>BUZZER</h3>
-                                <div class="actuator-state" id="buzzer">OFF</div>
+                                <div class="actuator-state off" id="buzzer">OFF</div>
                             </div>
                             <div class="icon buzzer-icon">🔊</div>
                         </div>
                         <div class="status-text" id="buzzerText">[ INACTIVE ]</div>
-                        <button onclick="toggleBuzzer()">▣ TOGGLE</button>
+                        <button onclick="toggleBuzzer()">&#9632; TOGGLE</button>
                     </div>
 
                 </div>
             </section>
 
+            <!-- LOG -->
             <section class="log-section">
                 <div class="section-title">
-                    SYSTEM LOG - ACTIVITY MONITOR
+                    &#9632; SYSTEM LOG — ACTIVITY MONITOR
                     <span>LOG/005</span>
                 </div>
 
@@ -216,6 +225,7 @@
 
         </div>
 
+        <!-- CAMERA -->
         <section class="horror-panel">
             <div class="camera-header">
                 <span>CAM-01 // NIGHT FEED</span>
@@ -233,17 +243,19 @@
             </div>
 
             <div class="camera-text">
-            MOTION UNKNOWN // AUDIO DISTORTION DETECTED
+                MOTION UNKNOWN // AUDIO DISTORTION DETECTED
             </div>
         </section>
+
     </section>
 
+    <!-- STATUS BAR -->
     <footer class="footer" id="footerMessage">
-        &gt; SENSOR DATA UPDATED. ALL READINGS NOMINAL.
+        SENSOR DATA UPDATED. ALL READINGS NOMINAL.
     </footer>
 
 </div>
 
-<script src="/static/script.js?v=7"></script>
+<script src="/static/script.js?v=8"></script>
 </body>
 </html>
